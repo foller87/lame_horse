@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,11 +14,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "pages")
+@Table(name = "pages", uniqueConstraints = {
+        @UniqueConstraint(name = "pages_path_unique", columnNames = "path")
+})
 public class Page implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(generator = "page_generator_id")
+    @GenericGenerator(name = "page_generator_id", strategy = "increment")
+    private Long id;
 //    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Site.class, cascade = CascadeType.REMOVE, optional = false)
 //    @OnDelete(action = OnDeleteAction.CASCADE)
 //    @JoinColumn(foreignKey = @ForeignKey(name = "site_page_FK"), columnDefinition = "Integer",
@@ -25,7 +29,7 @@ public class Page implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
-    @Column(columnDefinition = "TEXT NOT NULL, UNIQUE KEY site_id, path_index (path(512))")
+    @Column(columnDefinition = "TEXT NOT NULL, UNIQUE KEY path_index (path(512))")
     private String path;
     @Column(nullable = false)
     private int code;

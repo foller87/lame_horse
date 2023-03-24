@@ -12,6 +12,7 @@ import searchengine.repository.SiteRepository;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -29,20 +30,16 @@ public class SiteService
     public Set<Site> saveSitesDB()
     {
         Set<Site> sites = new HashSet<>();
-        Iterable<Site> sitesDB = siteRepository.findAll();
         for (searchengine.config.Site site : sitesList.getSites()) {
-            sites.add(addNewSites(site, sitesDB));
+            sites.add(addNewSites(site));
         }
         return sites;
     }
-    private Site addNewSites(searchengine.config.Site site, Iterable<Site> sitesDB) {
+    private Site addNewSites(searchengine.config.Site site) {
         Site newSite = new Site();
         String urlSiteToConfig = checkSiteUrl(site.getUrl());
-        for (Site s : sitesDB) {
-            if (s.getUrl().equals(urlSiteToConfig)) {
-                siteRepository.delete(s);
-            }
-        }
+        List<Site> sites = siteRepository.findByUrl(urlSiteToConfig);
+        if (!sites.isEmpty()) sites.forEach(s-> siteRepository.deleteById(s.getId()));
         newSite.setUrl(urlSiteToConfig);
         newSite.setName(site.getName());
         newSite.setSiteStatus(SiteStatus.INDEXING);
@@ -77,15 +74,5 @@ public class SiteService
                 siteRepository.save(site);
             }
         }
-    }
-    public Set<Site> getSitesByStatus(SiteStatus status){
-        Set<Site> sites = new HashSet<>();
-        Iterable<Site> iterableSites = siteRepository.findAll();
-        for (Site site : iterableSites) {
-            if (site.getSiteStatus().equals(status)){
-                sites.add(site);
-            }
-        }
-        return sites;
     }
 }

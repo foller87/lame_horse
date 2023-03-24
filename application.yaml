@@ -6,27 +6,37 @@ spring:
   datasource:
     username: root
     password: 1907181
-    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
   jpa:
     properties:
       hibernate:
         jdbc:
-          batch_size: 7
+          batch_size: 20
+          order_updates: true
+          order_inserts: true
+          generate_statistics: true
         dialect: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
-logging:
-  level:
-    root: ERROR
-    org.springframework.web: ERROR
-    com.howtodoinjava: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
+#logging:
+#  level:
+#    root: ERROR
+#    org.springframework.web: ERROR
+#    com.howtodoinjava: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    - url: https://www.skillbox.ru
-      name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+#    - url: https://www.lenta.ru
+#      name: Лента.ру
+#    - url: https://www.skillbox.ru
+#      name: Skillbox
+#    - url: https://www.playback.ru
+#      name: PlayBack.Ru
+    - url: https://www.svetlovka.ru
+      name: Svetlovka.ru
+#    - url: https://dimonvideo.ru/
+#      name: DIMONVIDEO.ru
+connection-setting:
+  userAgent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-us; rvl.8.1.6 Gecko/20070725 Firefox/2.0.0.6
+  referrer: http://www.google.com

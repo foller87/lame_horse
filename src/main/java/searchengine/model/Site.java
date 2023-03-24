@@ -1,9 +1,6 @@
 package searchengine.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,11 +13,12 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "site")
 public class Site implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     @Enumerated(EnumType.STRING)
     @Column(name ="status", columnDefinition = "ENUM('INDEXING', 'INDEXED', 'FAILED')", nullable = false)
     private SiteStatus siteStatus;
@@ -34,7 +32,4 @@ public class Site implements Serializable {
     private String name;
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)
     private Set<Page> pages;
-    @OneToMany (mappedBy = "site")
-    private List<Lemma> lemmas;
-
 }

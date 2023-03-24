@@ -11,6 +11,7 @@ import searchengine.model.SiteStatus;
 import searchengine.repository.SiteRepository;
 import searchengine.services.SiteService;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Component
@@ -26,12 +27,16 @@ public class FinderAspects {
 
     @AfterReturning("changeStatusSite()")
     private void afterReturningFindUrlsOnSiteAdvice(){
-        Set<Site> sites = siteService.getSitesByStatus(SiteStatus.INDEXING);
-        siteService.changeSiteStatus(sites, SiteStatus.INDEXED);
+        Set<Site> sites = repository.findBySiteStatus(SiteStatus.INDEXING);
+        sites.forEach(s->s.setSiteStatus(SiteStatus.INDEXED));
+        repository.saveAllAndFlush(sites);
+        System.out.println("Успешная индексация " + LocalDateTime.now());
     }
     @AfterThrowing("changeStatusSite()")
     private void afterThrowingFindUrlsOnSiteAdvice(){
-        Set<Site> sites = siteService.getSitesByStatus(SiteStatus.INDEXING);
-        siteService.changeSiteStatus(sites, SiteStatus.FAILED);
+        Set<Site> sites = repository.findBySiteStatus(SiteStatus.INDEXING);
+        sites.forEach(s->s.setSiteStatus(SiteStatus.FAILED));
+        repository.saveAllAndFlush(sites);
+        System.out.println("Какой то фейл " + LocalDateTime.now());
     }
 }
