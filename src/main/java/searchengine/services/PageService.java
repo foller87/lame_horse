@@ -15,10 +15,13 @@ import searchengine.repository.SiteRepository;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +50,7 @@ public class PageService {
         System.out.println("Ссылки сохранены с сайта"+ site.getUrl() + " время " + LocalTime.now());
         System.out.println("Времени прошло с сайта"+ site.getUrl() + " время " + (System.currentTimeMillis() - before));
     }
-    private Page getPage(Site site, String url, int statusCode) {
+    private Page setSiteAndUrl(Site site, String url, int statusCode) {
         Page newPage = new Page();
         myHTTPConnection = new MyHTTPConnection();
         newPage.setSite(site);
@@ -59,7 +62,8 @@ public class PageService {
                 newPage.setContent(connection.timeout(6 * 1000).get().html());
             } catch (IOException e) {
                 System.out.println("PageService на ссылке " + url + " " + newPage.getCode());
-                throw new RuntimeException(e);
+                newPage.setCode(404);
+                newPage.setContent("");
             }
         } else newPage.setContent("");
         return newPage;
@@ -67,7 +71,7 @@ public class PageService {
     private List<Page> getListPages(Site site, Map<String, Integer> pathHtmlFiles) {
         List<Page> pages = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : pathHtmlFiles.entrySet()) {
-            pages.add(getPage(site, entry.getKey(), entry.getValue()));
+            pages.add(setSiteAndUrl(site, entry.getKey(), entry.getValue()));
         }
         if (pages.size() == 30) {
             pageRepository.saveAllAndFlush(pages);
@@ -78,5 +82,44 @@ public class PageService {
     private String getNameSite(String url) {
         String name = url.substring(url.lastIndexOf("//") + 2, (url.length() - 1));
         return name;
+    }
+    public Map<String, Object> indexPage(String url) {
+        Map<String, Object> response = new HashMap<>();
+        String domain = getDomain(url);
+        if (domain.isBlank()) {
+            response.put("result", false);
+            response.put("error", "Адрес страницы указан неверно.");
+            return response;
+        }
+        List<Site> site = siteRepository.findByUrl(domain);
+        if (site.isEmpty()) {
+            response.put("result", false);
+            response.put("error", "Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле");
+            return response;
+        }
+        //TODO: пока что url, далее необходимо заменить на path без домена
+        pageRepository.delete(pageRepository.findPageByPath(url));
+        Page page = Page.builder().path(url).site(site.get(0)).build();
+        try {
+            Connection connection = myHTTPConnection.getConnection(url);
+            page.setContent(connection.timeout(6 * 1000).get().html());
+            page.setCode(connection.execute().statusCode());
+        } catch (IOException e) {
+            System.out.println("PageService на ссылке " + url + " " + page.getCode());
+            page.setCode(404);
+            page.setContent("");
+        }
+        pageRepository.save(page);
+        response.put("result", true);
+        return response;
+    }
+    public String getDomain(String url) {
+        String regex = "http[?s]://[^/]+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) return url.substring(matcher.start(), matcher.end() + 1);
+        else url = "";
+        return url;
     }
 }

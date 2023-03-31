@@ -2,15 +2,12 @@ package searchengine.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
+import searchengine.response.IndexingResponse;
 import searchengine.services.IndexingService;
+import searchengine.services.IndexingServiceIml;
 import searchengine.services.StatisticsService;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -18,6 +15,7 @@ import java.util.Map;
 public class ApiController {
 
     private final StatisticsService statisticsService;
+    private final IndexingResponse indexingResponse;
     private final IndexingService indexingService;
 
     @GetMapping("/statistics")
@@ -26,22 +24,14 @@ public class ApiController {
     }
     @GetMapping("/startIndexing")
     public ResponseEntity startIndexing() {
-        Map<String, Object> response = new HashMap<>();
-        boolean result = !indexingService.startIndexing();
-        response.put("result", result);
-        if (result)
-        {
-            return ResponseEntity.ok(response);
-        }
-        response.put("error", "Индексация уже запущена");
-        return ResponseEntity.ok(response);
+        return indexingResponse.startIndexing();
     }
     @GetMapping("/stopIndexing")
     public ResponseEntity stopIndexing(){
-        Map<String, Object> response = new HashMap<>();
-        boolean result = indexingService.stopIndexing();
-        response.put("result", result);
-        if (!result) response.put("error", "Индексация не запущена");
-        return ResponseEntity.ok(response);
+        return indexingResponse.stopIndexing();
+    }
+    @PostMapping("/indexPage/{url}")
+    public ResponseEntity indexPage(@PathVariable String url){
+        return indexingResponse.indexPage(url);
     }
 }

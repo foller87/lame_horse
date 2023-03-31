@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 @Data
@@ -52,7 +53,7 @@ public class SearcherUrls extends RecursiveAction {
                 subTasks.add(task);
                 node.addUrl(child);
             }
-            subTasks.forEach(t -> t.join());
+            subTasks.forEach(ForkJoinTask::join);
         }
     }
     private void addUrl(Elements elements, Set<String> urls){
@@ -69,19 +70,12 @@ public class SearcherUrls extends RecursiveAction {
         try {
             Connection.Response response = connection.execute();
             statusCode = response.statusCode();
-            pathHtmlFiles.put(url, statusCode);
         } catch (IOException e) {
         System.out.println("SearcherUrls на ссылке " + url);
-        throw new RuntimeException(e);
+        statusCode = 404;
         }
+        pathHtmlFiles.put(url, statusCode);
         return statusCode;
-    }
-    private String checkSiteUrl(String url) {
-        String newUrl = url.replaceAll("www\\.", "");
-        if(url.lastIndexOf("/") < url.length() - 1) {
-            newUrl += "/";
-        }
-        return newUrl;
     }
     private boolean checkPageOrUrl(String url) {
         boolean urlBoolean = url.lastIndexOf("/") == url.length() - 1;

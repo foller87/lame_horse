@@ -37,7 +37,7 @@ public class SiteService
     }
     private Site addNewSites(searchengine.config.Site site) {
         Site newSite = new Site();
-        String urlSiteToConfig = checkSiteUrl(site.getUrl());
+        String urlSiteToConfig = removePrefixAndAddSuffix(site.getUrl());
         List<Site> sites = siteRepository.findByUrl(urlSiteToConfig);
         if (!sites.isEmpty()) sites.forEach(s-> siteRepository.deleteById(s.getId()));
         newSite.setUrl(urlSiteToConfig);
@@ -47,7 +47,7 @@ public class SiteService
         newSite.setId(siteRepository.save(newSite).getId());
         return newSite;
     }
-    private String checkSiteUrl(String url) {
+    private String removePrefixAndAddSuffix(String url) {
         String newUrl = url.replaceAll("www\\.", "");
         if(url.lastIndexOf("/") < url.length() - 1) {
             newUrl += "/";
@@ -57,22 +57,12 @@ public class SiteService
     public boolean checkIndexingSite(){
         boolean check = false;
         Iterable<Site> sites = siteRepository.findAll();
-        if(sites.iterator().hasNext()) {
-            for (Site site : sites) {
-                if (site.getSiteStatus().equals(SiteStatus.INDEXING)) {
-                    check = true;
-                    break;
-                }
+        for (Site site : sites) {
+            if (site.getSiteStatus().equals(SiteStatus.INDEXING)) {
+                check = true;
+                break;
             }
         }
         return check;
-    }
-    public void changeSiteStatus(Set<Site> sites, SiteStatus status) {
-        if(!sites.isEmpty()) {
-            for (Site site : sites) {
-                site.setSiteStatus(status);
-                siteRepository.save(site);
-            }
-        }
     }
 }
