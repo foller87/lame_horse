@@ -8,6 +8,7 @@ import searchengine.model.Site;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -44,15 +45,5 @@ public class IndexingServiceIml implements IndexingService{
         boolean checkSiteStatus = siteService.checkIndexingSite();
         if (!checkSiteStatus) finderThread.forEach(Thread::interrupt);
         return checkSiteStatus;
-    }
-//    TODO: 1. Проверить страницу в базе по домену.
-//          2. Проверить существует ли страница.
-//          3. Если существует удалить из таблиц page, lemma, index и проиндексировать.
-//          4. Не существует, то проиндексировать.
-
-    @Override
-    public boolean indexPage(String url) {
-        boolean check = true;
-        return check;
     }
 }

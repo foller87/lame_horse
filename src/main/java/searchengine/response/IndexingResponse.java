@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import searchengine.services.IndexingService;
+import searchengine.services.PageService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class IndexingResponse {
     private final IndexingService indexingService;
+    private final PageService pageService;
 
     public ResponseEntity startIndexing() {
         Map<String, Object> response = new HashMap<>();
@@ -28,6 +30,6 @@ public class IndexingResponse {
         return ResponseEntity.badRequest().body(response);
     }
     public ResponseEntity indexPage(String url){
-        return ResponseEntity.ok(indexingService.indexPage(url));
+        return ResponseEntity.ok(pageService.indexPage(url));
     }
 }
