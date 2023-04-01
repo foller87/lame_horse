@@ -1,5 +1,7 @@
 package searchengine.dto.lemmatizer;
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Locale;
 
 @Component
+@Data
+@RequiredArgsConstructor
 public class Lemmatizer {
     private static final String[] particlesNames = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ", "МС", "ЧАСТ"};
 

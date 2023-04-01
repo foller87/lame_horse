@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import searchengine.dto.lemmatizer.Lemmatizer;
 import searchengine.dto.searcherUrls.MyHTTPConnection;
 import searchengine.dto.searcherUrls.Node;
 import searchengine.dto.searcherUrls.SearcherUrls;
@@ -30,11 +31,11 @@ public class PageService {
     private PageRepository pageRepository;
     @Autowired
     private SiteRepository siteRepository;
+    private final Lemmatizer lemmatizer;
     private MyHTTPConnection myHTTPConnection;
 
     public void findUrlsOnSite(Site site) {
-        long start = System.currentTimeMillis();
-        System.out.println("Начало посика ссылок " + LocalTime.now());
+        System.out.println("Начало поиска ссылок " + LocalTime.now());
         String url = site.getUrl();
         Node node = new Node(url);
         Map<String, Integer> pathHtmlFiles = new ConcurrentHashMap<>();
@@ -44,13 +45,10 @@ public class PageService {
         fjp.invoke(searcher);
         List<Page> pages = getListPages(site, pathHtmlFiles);
         System.out.println("Ссылки получены с сайта"+ site.getUrl() + " время " + LocalTime.now());
-        long before = System.currentTimeMillis() - start;
-        System.out.println("Времени прошло с сайта"+ site.getUrl() + " время "+ before);
         pageRepository.saveAllAndFlush(pages);
         System.out.println("Ссылки сохранены с сайта"+ site.getUrl() + " время " + LocalTime.now());
-        System.out.println("Времени прошло с сайта"+ site.getUrl() + " время " + (System.currentTimeMillis() - before));
     }
-    private Page setSiteAndUrl(Site site, String url, int statusCode) {
+    private Page setPageData(Site site, String url, int statusCode) {
         Page newPage = new Page();
         myHTTPConnection = new MyHTTPConnection();
         newPage.setSite(site);
@@ -71,10 +69,10 @@ public class PageService {
     private List<Page> getListPages(Site site, Map<String, Integer> pathHtmlFiles) {
         List<Page> pages = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : pathHtmlFiles.entrySet()) {
-            pages.add(setSiteAndUrl(site, entry.getKey(), entry.getValue()));
+            pages.add(setPageData(site, entry.getKey(), entry.getValue()));
         }
         if (pages.size() == 30) {
-            pageRepository.saveAllAndFlush(pages);
+            pageRepository.saveAll(pages);
             pages = new ArrayList<>();
         }
         return pages;
@@ -110,6 +108,7 @@ public class PageService {
             page.setCode(404);
             page.setContent("");
         }
+        Map<String, Integer> lemmas = lemmatizer.getLemmas(page.getContent());
         pageRepository.save(page);
         response.put("result", true);
         return response;

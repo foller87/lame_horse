@@ -16,7 +16,6 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingResponse indexingResponse;
-    private final IndexingService indexingService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {

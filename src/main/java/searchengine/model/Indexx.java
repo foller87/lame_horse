@@ -19,8 +19,8 @@ public class Indexx {
     private int id;
     @ManyToOne(cascade = CascadeType.ALL)
     private Lemma lemma;
-//    @ManyToOne(cascade = CascadeType.ALL)
-//    private PageSite pageSites;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Page pageSites;
     @Column(name = "count_lemmas", nullable = false)
     private float countLemmas;
 }

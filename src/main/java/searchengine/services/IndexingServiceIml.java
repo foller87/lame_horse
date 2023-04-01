@@ -30,11 +30,8 @@ public class IndexingServiceIml implements IndexingService{
         Set<Site> sites = siteService.saveSitesDB();
         finderThread = new ArrayList<>();
         for (Site site : sites) {
-            finderThread.add(new Thread(() -> {
-                while(!Thread.interrupted()){
-                    pageService.findUrlsOnSite(site);
-                }
-            }));
+            finderThread.add(new Thread(() ->
+                    pageService.findUrlsOnSite(site)));
         }
         finderThread.forEach(Thread::start);
         return false;

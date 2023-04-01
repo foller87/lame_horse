@@ -11,10 +11,10 @@ spring:
     properties:
       hibernate:
         jdbc:
-          batch_size: 20
-          order_updates: true
-          order_inserts: true
-          generate_statistics: true
+#          batch_size: 30
+#          order_updates: true
+#          order_inserts: true
+#          generate_statistics: true
         dialect: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
