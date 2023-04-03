@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
-    Page findPageByPath(String path);
+    List<Page> findPageByPath(String path);
 }

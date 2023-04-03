@@ -37,7 +37,8 @@ public class SearcherUrls extends RecursiveAction {
                 doc = connection.get();
             } catch (IOException e) {
                 System.out.println("SearcherUrls на ссылке " + url);
-                throw new RuntimeException(e);
+                pathHtmlFiles.put(url, 404);
+                return;
             }
             Elements elements = doc.select("a[href]");
             Set<String> urls = new HashSet<>();

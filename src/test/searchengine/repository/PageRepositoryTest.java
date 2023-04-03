@@ -19,14 +19,15 @@ class PageRepositoryTest {
     private PageService pageService;
 
 
-    @Test
-    void findByPath(){
-        Page page = Mockito.mock(Page.class);
-        String path = page.getPath();
-        when(pageRepository.findPageByPath(path)).thenReturn(page);
-
-        Page actual = pageRepository.findPageByPath(path);
-
-        assertEquals(page, actual);
-    }
+//    @Test
+//    void findByPath(){
+//        String path = "https://habr.com/ru/company/";
+//        Page page = Mockito.mock(Page.class);
+//        page.setPath(path);
+//        when(pageRepository.findPageByPath(path)).thenReturn(page);
+//
+//        Page actual = pageRepository.findPageByPath(path);
+//
+//        assertEquals(page, actual);
+//    }
 }

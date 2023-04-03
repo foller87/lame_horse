@@ -65,4 +65,7 @@ public class SiteService
         }
         return check;
     }
+    public List<Site> findSiteByUrl(String url){
+        return siteRepository.findByUrl(url);
+    }
 }

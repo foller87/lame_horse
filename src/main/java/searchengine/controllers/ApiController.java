@@ -5,8 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.response.IndexingResponse;
-import searchengine.services.IndexingService;
-import searchengine.services.IndexingServiceIml;
 import searchengine.services.StatisticsService;
 
 @RestController
@@ -29,8 +27,8 @@ public class ApiController {
     public ResponseEntity stopIndexing(){
         return indexingResponse.stopIndexing();
     }
-    @PostMapping("/indexPage/{url}")
-    public ResponseEntity indexPage(@PathVariable String url){
+    @PostMapping("/indexPage")
+    public ResponseEntity indexPage(String url){
         return indexingResponse.indexPage(url);
     }
 }

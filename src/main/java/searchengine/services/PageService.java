@@ -2,37 +2,32 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import searchengine.dto.lemmatizer.Lemmatizer;
 import searchengine.dto.searcherUrls.MyHTTPConnection;
 import searchengine.dto.searcherUrls.Node;
 import searchengine.dto.searcherUrls.SearcherUrls;
 import searchengine.model.Page;
 import searchengine.model.Site;
+import searchengine.repository.IndexRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class PageService {
-    @Autowired
-    private PageRepository pageRepository;
-    @Autowired
-    private SiteRepository siteRepository;
-    private final Lemmatizer lemmatizer;
+    private final PageRepository pageRepository;
+    private final SiteRepository siteRepository;
+    private final LemmaService lemmaService;
     private MyHTTPConnection myHTTPConnection;
+    private final IndexRepository indexRepository;
 
     public void findUrlsOnSite(Site site) {
         System.out.println("Начало поиска ссылок " + LocalTime.now());
@@ -78,27 +73,14 @@ public class PageService {
         return pages;
     }
     private String getNameSite(String url) {
-        String name = url.substring(url.lastIndexOf("//") + 2, (url.length() - 1));
-        return name;
+        return url.substring(url.lastIndexOf("//") + 2, (url.length() - 1));
     }
-    public Map<String, Object> indexPage(String url) {
-        Map<String, Object> response = new HashMap<>();
-        String domain = getDomain(url);
-        if (domain.isBlank()) {
-            response.put("result", false);
-            response.put("error", "Адрес страницы указан неверно.");
-            return response;
-        }
-        List<Site> site = siteRepository.findByUrl(domain);
-        if (site.isEmpty()) {
-            response.put("result", false);
-            response.put("error", "Данная страница находится за пределами сайтов, " +
-                    "указанных в конфигурационном файле");
-            return response;
-        }
+    public Page getPageByUrl(Site site, String url) {
         //TODO: пока что url, далее необходимо заменить на path без домена
-        pageRepository.delete(pageRepository.findPageByPath(url));
-        Page page = Page.builder().path(url).site(site.get(0)).build();
+        List<Page> pageList = pageRepository.findPageByPath(url);
+        if(!pageList.isEmpty())pageRepository.delete(pageList.get(0));
+        Page page = Page.builder().path(url).site(site).build();
+        myHTTPConnection = new MyHTTPConnection();
         try {
             Connection connection = myHTTPConnection.getConnection(url);
             page.setContent(connection.timeout(6 * 1000).get().html());
@@ -108,17 +90,7 @@ public class PageService {
             page.setCode(404);
             page.setContent("");
         }
-        Map<String, Integer> lemmas = lemmatizer.getLemmas(page.getContent());
-        pageRepository.save(page);
-        response.put("result", true);
-        return response;
-    }
-    public String getDomain(String url) {
-        String regex = "http[?s]://[^/]+";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(url);
-        if (matcher.find()) return url.substring(matcher.start(), matcher.end() + 1);
-        else url = "";
-        return url;
+        page = pageRepository.save(page);
+        return page;
     }
 }

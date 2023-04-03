@@ -30,6 +30,6 @@ public class IndexingResponse {
         return ResponseEntity.badRequest().body(response);
     }
     public ResponseEntity indexPage(String url){
-        return ResponseEntity.ok(pageService.indexPage(url));
+        return ResponseEntity.ok(indexingService.pageIndexing(url));
     }
 }

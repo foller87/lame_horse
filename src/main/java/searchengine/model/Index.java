@@ -1,9 +1,6 @@
 package searchengine.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -11,9 +8,10 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
-@Table (name = "indexes")
-public class Indexx {
+@Table (name = "`index`")
+public class Index {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -21,6 +19,6 @@ public class Indexx {
     private Lemma lemma;
     @ManyToOne(cascade = CascadeType.ALL)
     private Page pageSites;
-    @Column(name = "count_lemmas", nullable = false)
-    private float countLemmas;
+    @Column(name = "`rank`", nullable = false)
+    private float rank;
 }

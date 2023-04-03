@@ -4,22 +4,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Service;
+import searchengine.model.Index;
+import searchengine.model.Lemma;
+import searchengine.model.Page;
 import searchengine.model.Site;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
 @RequiredArgsConstructor
 @EnableAspectJAutoProxy
 public class IndexingServiceIml implements IndexingService{
-    @Autowired
     private final SiteService siteService;
-    @Autowired
-    private PageService pageService;
+    private final PageService pageService;
+    private final LemmaService lemmaService;
+    private final IndexService indexService;
     private List<Thread> finderThread;
 
 
@@ -42,5 +44,42 @@ public class IndexingServiceIml implements IndexingService{
         boolean checkSiteStatus = siteService.checkIndexingSite();
         if (!checkSiteStatus) finderThread.forEach(Thread::interrupt);
         return checkSiteStatus;
+    }
+    @Override
+    public Map<String, Object> pageIndexing(String url) {
+        Map<String, Object> response = new HashMap<>();
+        String domain = getDomain(url);
+        if (domain.isBlank()) {
+            response.put("result", false);
+            response.put("error", "Адрес страницы указан неверно.");
+            return response;
+        }
+        List<Site> siteList = siteService.findSiteByUrl(domain);
+        if (siteList.isEmpty()) {
+            response.put("result", false);
+            response.put("error", "Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле");
+            return response;
+        }
+        Site site = siteList.get(0);
+        Page page = pageService.getPageByUrl(site, url);
+        HashMap<String, Integer> lemmas = lemmaService.getLemmasFromHTML(page.getContent());
+        for(Map.Entry<String, Integer> entry : lemmas.entrySet()){
+            Lemma lemma = lemmaService.saveLemma(site, entry.getKey());
+            indexService.saveIndexInRepository(page, lemma, entry.getValue());
+        };
+        response.put("result", true);
+        return response;
+    }
+    private String getDomain(String url) {
+        String regex = "http[?s]://[^/]+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+            return url.substring(matcher.start(), matcher.end() + 1)
+                    .replaceAll("www\\.", "");
+        }
+        else url = "";
+        return url;
     }
 }

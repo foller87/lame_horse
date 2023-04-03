@@ -1,9 +1,6 @@
 package searchengine.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -12,6 +9,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 public class Lemma {
     @Id
@@ -25,5 +23,5 @@ public class Lemma {
     private int frequency;
     @OneToMany
     @JoinColumn(name = "lemma_id")
-    private List<Indexx> indexes;
+    private List<Index> indexes;
 }

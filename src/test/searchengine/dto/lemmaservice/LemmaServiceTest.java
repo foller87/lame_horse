@@ -1,18 +1,18 @@
-package searchengine.dto.lemmatizer;
+package searchengine.dto.lemmaservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import searchengine.services.LemmaService;
 
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-class LemmatizerTest {
+class LemmaServiceTest {
     @Autowired
-    private Lemmatizer lemmatizer;
-
+    private LemmaService lemmaService;
     @Test
     void getLemmas() {
         String textHTML = "Повторное появление леопарда в Осетии позволяет предположить, что леопард постоянно обитает " +
@@ -31,7 +31,7 @@ class LemmatizerTest {
         lemmasTest.put("леопард", 2);
         lemmasTest.put("обитать", 1);
 
-        HashMap<String, Integer> actual = lemmatizer.getLemmas(textHTML);
+        HashMap<String, Integer> actual = lemmaService.getLemmasFromHTML(textHTML);
 
         assertEquals(lemmasTest, actual);
         assertEquals(2, actual.get("леопард"));
