@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,7 +34,6 @@ public class Page implements Serializable {
     private int code;
     @Column(length = 16777215, columnDefinition = "mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String content;
-//    @OneToMany
-//    @JoinColumn(name = "page_id")
-//    private List<Indexx> indexes;
+    @OneToMany (mappedBy = "page", cascade = CascadeType.ALL)
+    private List<Index> indexes;
 }

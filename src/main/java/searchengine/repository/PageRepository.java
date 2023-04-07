@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
     List<Page> findPageByPath(String path);
+    Long countBySiteId(Long siteId);
 }

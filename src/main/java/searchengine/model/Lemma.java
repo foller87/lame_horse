@@ -14,14 +14,15 @@ import java.util.List;
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @ManyToOne(cascade = CascadeType.ALL)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "site_id", nullable = false, foreignKey = @ForeignKey(name = "site_lemma_FK"),
+    columnDefinition = "Integer")
     private Site site;
     @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String lemma;
     @Column(nullable = false)
     private int frequency;
-    @OneToMany
-    @JoinColumn(name = "lemma_id")
+    @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
     private List<Index> indexes;
 }

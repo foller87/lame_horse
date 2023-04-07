@@ -14,11 +14,13 @@ import javax.persistence.*;
 public class Index {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @ManyToOne(cascade = CascadeType.ALL)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lemma_id", nullable = false)
     private Lemma lemma;
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Page pageSites;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pages_id", nullable = false)
+    private Page page;
     @Column(name = "`rank`", nullable = false)
     private float rank;
 }

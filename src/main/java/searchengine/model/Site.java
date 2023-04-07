@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -32,4 +31,6 @@ public class Site implements Serializable {
     private String name;
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)
     private Set<Page> pages;
+    @OneToMany(mappedBy = "site")
+    private Set<Lemma> lemmas;
 }

@@ -18,12 +18,14 @@ public class SearcherUrls extends RecursiveAction {
     private Node node;
     private String domain;
     private MyHTTPConnection myHTTPConnection;
+    private boolean flag;
 
-    public SearcherUrls(Node node, Map<String, Integer> pathHtmlFiles, String domain) {
+    public SearcherUrls(Node node, Map<String, Integer> pathHtmlFiles, String domain, boolean flag) {
         this.node = node;
         this.pathHtmlFiles = pathHtmlFiles;
         this.domain = domain;
         myHTTPConnection = new MyHTTPConnection();
+        this.flag = flag;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class SearcherUrls extends RecursiveAction {
         Connection connection = myHTTPConnection.getConnection(url);
         Document doc;
         int statusCode = getStatusCode(url, connection);
-        if (statusCode == 200 || statusCode == 301) {
+        if (!checkStatusPageByFirstChar(statusCode) && !flag) {
             try {
                 doc = connection.get();
             } catch (IOException e) {
@@ -49,7 +51,7 @@ public class SearcherUrls extends RecursiveAction {
             List<SearcherUrls> subTasks = new LinkedList<>();
             for (String urlString : urls) {
                 Node child = new Node(urlString);
-                SearcherUrls task = new SearcherUrls(child, pathHtmlFiles, domain);
+                SearcherUrls task = new SearcherUrls(child, pathHtmlFiles, domain, flag);
                 task.fork();
                 subTasks.add(task);
                 node.addUrl(child);
@@ -83,6 +85,10 @@ public class SearcherUrls extends RecursiveAction {
         int endIndex = url.lastIndexOf(".html");
         boolean page = endIndex == url.length() - 5;
         return (urlBoolean || page);
+    }
+    private boolean checkStatusPageByFirstChar(int statusCode){
+        String status = String.valueOf(statusCode);
+        return (status.indexOf("5") == 0 || status.indexOf("4") == 0);
     }
 }
 

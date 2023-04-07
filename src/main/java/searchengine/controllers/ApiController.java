@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.response.IndexingResponse;
+import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
 
 @RestController
@@ -13,7 +13,7 @@ import searchengine.services.StatisticsService;
 public class ApiController {
 
     private final StatisticsService statisticsService;
-    private final IndexingResponse indexingResponse;
+    private final IndexingService indexingService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -21,14 +21,14 @@ public class ApiController {
     }
     @GetMapping("/startIndexing")
     public ResponseEntity startIndexing() {
-        return indexingResponse.startIndexing();
+        return indexingService.startIndexing();
     }
     @GetMapping("/stopIndexing")
     public ResponseEntity stopIndexing(){
-        return indexingResponse.stopIndexing();
+        return indexingService.stopIndexing();
     }
     @PostMapping("/indexPage")
     public ResponseEntity indexPage(String url){
-        return indexingResponse.indexPage(url);
+        return indexingService.pageIndexing(url);
     }
 }
