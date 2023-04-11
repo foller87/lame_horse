@@ -1,22 +1,16 @@
 package searchengine.repository;
 
-import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import searchengine.model.Page;
-import searchengine.services.PageService;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import searchengine.services.PageServiceImpl;
 
 @SpringBootTest
 class PageRepositoryTest {
     @Mock
     private PageRepository pageRepository;
     @MockBean
-    private PageService pageService;
+    private PageServiceImpl pageService;
 
 
 //    @Test

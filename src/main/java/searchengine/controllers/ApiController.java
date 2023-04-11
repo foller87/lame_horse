@@ -31,4 +31,8 @@ public class ApiController {
     public ResponseEntity indexPage(String url){
         return indexingService.pageIndexing(url);
     }
+    @GetMapping("/search")
+    public ResponseEntity search(String query, long offset, String site, long limit) {
+        return indexingService.search(query, offset, site, limit);
+    }
 }

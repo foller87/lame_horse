@@ -1,10 +1,15 @@
 package searchengine.dto.searcherUrls;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
@@ -12,11 +17,11 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 @Data
-@NoArgsConstructor
 public class SearcherUrls extends RecursiveAction {
     private Map<String, Integer> pathHtmlFiles;
     private Node node;
     private String domain;
+    @Autowired
     private MyHTTPConnection myHTTPConnection;
     private boolean flag;
 
@@ -24,7 +29,6 @@ public class SearcherUrls extends RecursiveAction {
         this.node = node;
         this.pathHtmlFiles = pathHtmlFiles;
         this.domain = domain;
-        myHTTPConnection = new MyHTTPConnection();
         this.flag = flag;
     }
 

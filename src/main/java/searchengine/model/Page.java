@@ -28,7 +28,7 @@ public class Page implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
-    @Column(columnDefinition = "TEXT NOT NULL, UNIQUE KEY path_index (path(512))")
+    @Column(columnDefinition = "TEXT NOT NULL, UNIQUE KEY path_index Index(path(512))")
     private String path;
     @Column(nullable = false)
     private int code;

@@ -1,6 +1,7 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,10 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @EnableAspectJAutoProxy
-public class IndexingServiceIml implements IndexingService{
-    private final SiteService siteService;
-    private final PageService pageService;
-    private final LemmaService lemmaService;
+public class IndexingServiceImpl implements IndexingService{
+    private final SiteServiceImpl siteService;
+    private final PageServiceImpl pageService;
+    private final LemmaServiceImpl lemmaService;
     private volatile boolean flag;
 
 
@@ -83,5 +84,9 @@ public class IndexingServiceIml implements IndexingService{
         }
         else url = "";
         return url;
+    }
+    @Override
+    public ResponseEntity search(String query, long offset, String site, long limit) {
+        return null;
     }
 }

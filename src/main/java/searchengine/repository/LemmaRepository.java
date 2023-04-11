@@ -17,7 +17,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Long> {
     @Transactional
     @Query( value = "update search_engine.lemma l, `search_engine`.`index` i, `search_engine`." +
             "`pages` p set l.frequency = l.frequency-1 \n" +
-            "WHERE i.lemma_id = l.id and p.id = i.pages_id and p.id = :pageId",
+            "WHERE i.lemma_id = l.id and p.id = i.pages_id and l.frequency > 0 and p.id = :pageId",
             nativeQuery = true)
     void updateLemmaByPageIdNative(@Param("pageId") Long pageId);
     long countBySiteId(Long siteId);

@@ -1,26 +1,22 @@
 package searchengine.dto.searcherUrls;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-
+import org.springframework.stereotype.Component;
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Component
 @ConfigurationProperties(prefix = "connection-settings")
 public class MyHTTPConnection {
+    @Value("user_agent")
     private String userAgent;
+    @Value("referrer")
     private String referrer;
     public Connection getConnection(String url) {
-        Connection connection = Jsoup.connect(url).ignoreHttpErrors(true)
-                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-us; rvl.8.1.6) " +
-                        "Gecko/20070725 Firefox/2.0.0.6")
-                .referrer("http://www.google.com").followRedirects(false);
-        return connection;
+        return Jsoup.connect(url).ignoreHttpErrors(true)
+                .userAgent(userAgent)
+                .referrer(referrer).followRedirects(false);
     }
 }

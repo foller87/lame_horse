@@ -3,7 +3,7 @@ package searchengine.dto.lemmaservice;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import searchengine.services.LemmaService;
+import searchengine.services.LemmaServiceImpl;
 
 import java.util.HashMap;
 
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 class LemmaServiceTest {
     @Autowired
-    private LemmaService lemmaService;
+    private LemmaServiceImpl lemmaService;
     @Test
     void getLemmas() {
         String textHTML = "Повторное появление леопарда в Осетии позволяет предположить, что леопард постоянно обитает " +

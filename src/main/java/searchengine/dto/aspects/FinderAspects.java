@@ -12,7 +12,7 @@ import searchengine.model.Site;
 import searchengine.model.SiteStatus;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.SiteService;
+import searchengine.services.SiteServiceImpl;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class FinderAspects {
     @Autowired
-    private SiteService siteService;
+    private SiteServiceImpl siteService;
 
     @Autowired
     private SiteRepository siteRepository;
