@@ -2,7 +2,6 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteModel;
 import searchengine.config.SitesList;
@@ -10,6 +9,7 @@ import searchengine.dto.searcherUrls.MyHTTPConnection;
 import searchengine.model.Site;
 import searchengine.model.SiteStatus;
 import searchengine.repository.LemmaRepository;
+import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
 import java.io.IOException;
@@ -20,40 +20,31 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Component
 @Slf4j
 public class SiteServiceImpl implements SiteService
 {
     private final SiteRepository siteRepository;
     private final SitesList sitesList;
+    private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final MyHTTPConnection myHTTPConnection;
 
     @Override
-    public Set<Site> saveSitesDB()
-    {
+    public Set<Site> addNewSites() {
         Set<Site> sites = new HashSet<>();
         for (SiteModel siteModel : sitesList.getSites()) {
-            sites.add(addNewSites(siteModel));
+            Site newSite = new Site();
+            String urlSiteToConfig = removePrefixAndAddSuffix(siteModel.getUrl());
+            newSite.setUrl(urlSiteToConfig);
+            newSite.setName(siteModel.getName());
+            newSite.setSiteStatus(getStatusSite(newSite));
+            if (newSite.getSiteStatus().equals(SiteStatus.FAILED))
+                newSite.setLastError("Ошибка индексации: Главная страница сайта не доступна");
+            newSite.setStatusTime(LocalDateTime.now());
+            newSite.setId(siteRepository.save(newSite).getId());
+            sites.add(newSite);
         }
         return sites;
-    }
-    private Site addNewSites(SiteModel siteModel) {
-        Site newSite = new Site();
-        String urlSiteToConfig = removePrefixAndAddSuffix(siteModel.getUrl());
-        List<Site> sites = siteRepository.findByUrl(urlSiteToConfig);
-        if (!sites.isEmpty()) sites.forEach(s-> {
-            lemmaRepository.deleteAll();
-            siteRepository.deleteById(s.getId());
-        });
-        newSite.setUrl(urlSiteToConfig);
-        newSite.setName(siteModel.getName());
-        newSite.setSiteStatus(getStatusSite(newSite));
-        if (newSite.getSiteStatus().equals(SiteStatus.FAILED))
-            newSite.setLastError("Ошибка индексации: Главная страница сайта не доступна");
-        newSite.setStatusTime(LocalDateTime.now());
-        newSite.setId(siteRepository.save(newSite).getId());
-        return newSite;
     }
     private SiteStatus getStatusSite(Site site){
         int statusCode = checkingConnection(site);
@@ -92,5 +83,18 @@ public class SiteServiceImpl implements SiteService
             statusCode = 404;
         }
         return statusCode;
+    }
+    public void changeSiteStatus() {
+        List<Site> sites = siteRepository.findAll();
+        sites.forEach(site -> {
+            if (site.getSiteStatus().equals(SiteStatus.INDEXING)) site.setSiteStatus(SiteStatus.FAILED);
+        });
+        sites.forEach(site -> siteRepository.save(site));
+    }
+    @Override
+    public void deleteAllSites() {
+            lemmaRepository.deleteAllInBatch();
+            pageRepository.deleteAll();
+            siteRepository.deleteAll();
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingService;
+import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
 @RestController
@@ -14,6 +15,7 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
+    private final SearchService searchService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -32,7 +34,10 @@ public class ApiController {
         return indexingService.pageIndexing(url);
     }
     @GetMapping("/search")
-    public ResponseEntity search(String query, long offset, String site, long limit) {
-        return indexingService.search(query, offset, site, limit);
+    public ResponseEntity search(@RequestParam(required = false) String query,
+                                 @RequestParam(required = false) String site,
+                                 @RequestParam(required = false) Integer offset,
+                                 @RequestParam(required = false) Integer limit) {
+        return searchService.search(query, site, offset, limit);
     }
 }

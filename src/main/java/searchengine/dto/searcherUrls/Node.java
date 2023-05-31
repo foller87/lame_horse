@@ -13,21 +13,9 @@ public class Node {
         this.url = url;
         childrenUrls = new HashSet<>();
     }
-
     public void addUrl(Node child){
         childrenUrls.add(child);
     }
-
-    public String toString(StringBuilder builder){
-        builder.append(this.getUrl() + "\n");
-        if (childrenUrls.size() > 0) {
-            for (Node child : childrenUrls) {
-                child.toString(builder);
-            }
-        }
-        return builder.toString();
-    }
-
     @Override
     public boolean equals(Object obj) {
         return getUrl().equals(((Node) obj).getUrl());

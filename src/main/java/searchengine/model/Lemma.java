@@ -11,13 +11,13 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
+@Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(name = "lemma_unique", columnNames = "lemma")})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "site_id", nullable = false, foreignKey = @ForeignKey(name = "site_lemma_FK"),
-    columnDefinition = "Integer")
+    @JoinColumn(name = "site_id", nullable = false, foreignKey = @ForeignKey(name = "site_lemma_FK"))
     private Site site;
     @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String lemma;
@@ -25,4 +25,9 @@ public class Lemma {
     private int frequency;
     @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
     private List<Index> indexes;
+
+    @Override
+    public String toString() {
+        return lemma + ", frequency - " + frequency + " id - " + id;
+    }
 }

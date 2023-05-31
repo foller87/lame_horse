@@ -1,7 +1,7 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @EnableAspectJAutoProxy
+@Slf4j
 public class IndexingServiceImpl implements IndexingService{
     private final SiteServiceImpl siteService;
     private final PageServiceImpl pageService;
@@ -33,7 +34,8 @@ public class IndexingServiceImpl implements IndexingService{
             response.put("error", "Индексация уже запущена");
             return ResponseEntity.ok(response);
         }
-        Set<Site> sites = siteService.saveSitesDB();
+        siteService.deleteAllSites();
+        Set<Site> sites = siteService.addNewSites();
         List<Thread> finderThread = new ArrayList<>();
         for (Site site : sites) {
                 finderThread.add(new Thread(() ->
@@ -48,7 +50,10 @@ public class IndexingServiceImpl implements IndexingService{
         Map<String, Object> response = new HashMap<>();
         boolean checkSiteStatus = siteService.checkIndexingSite();
         response.put("result", checkSiteStatus);
-        if (!checkSiteStatus) flag = true;
+        if (!checkSiteStatus) {
+            flag = true;
+            siteService.changeSiteStatus();
+        }
         else response.put("error", "Индексация не запущена");
         return ResponseEntity.ok(response);
     }
@@ -84,9 +89,5 @@ public class IndexingServiceImpl implements IndexingService{
         }
         else url = "";
         return url;
-    }
-    @Override
-    public ResponseEntity search(String query, long offset, String site, long limit) {
-        return null;
     }
 }

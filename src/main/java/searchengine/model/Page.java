@@ -18,17 +18,12 @@ import java.util.List;
 })
 public class Page implements Serializable {
     @Id
-    @GeneratedValue(generator = "page_generator_id")
-    @GenericGenerator(name = "page_generator_id", strategy = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-//    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Site.class, cascade = CascadeType.REMOVE, optional = false)
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-//    @JoinColumn(foreignKey = @ForeignKey(name = "site_page_FK"), columnDefinition = "Integer",
-//            referencedColumnName = "id", nullable = false , name = "site_id", updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
     private Site site;
-    @Column(columnDefinition = "TEXT NOT NULL, UNIQUE KEY path_index Index(path(512))")
+    @Column(columnDefinition = "text", nullable = false)
     private String path;
     @Column(nullable = false)
     private int code;

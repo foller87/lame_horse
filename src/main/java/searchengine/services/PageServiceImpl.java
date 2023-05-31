@@ -3,24 +3,17 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import searchengine.dto.searcherUrls.MyHTTPConnection;
 import searchengine.dto.searcherUrls.Node;
 import searchengine.dto.searcherUrls.SearcherUrls;
-import searchengine.model.Page;
-import searchengine.model.Site;
-import searchengine.model.SiteStatus;
+import searchengine.model.*;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
@@ -31,6 +24,7 @@ public class PageServiceImpl implements PageService{
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final LemmaService lemmaService;
+    private final IndexService indexService;
     private final MyHTTPConnection myHTTPConnection;
 
     @Override
@@ -44,19 +38,18 @@ public class PageServiceImpl implements PageService{
         Map<String, Integer> pathHtmlFiles = new ConcurrentHashMap<>();
         String nameSite = getNameSite(url);
 
-        SearcherUrls searcher = new SearcherUrls(node, pathHtmlFiles, nameSite, flag);
+        SearcherUrls searcher = new SearcherUrls(node, pathHtmlFiles, nameSite, flag, myHTTPConnection);
         ForkJoinPool fjp = new ForkJoinPool(6);
         fjp.invoke(searcher);
 
         List<Page> pages = getListPages(site, pathHtmlFiles, flag);
-        log.info("Ссылки получены с сайта "+ site.getUrl() + " время " + LocalTime.now());
+        log.info("Получено " + pages.size() + " ссылок с сайта "+ site.getUrl() + " время " + LocalTime.now());
 
-        pages = pageRepository.saveAllAndFlush(pages);
+        pages.forEach(pageRepository::save);
         pages.forEach(page -> lemmaService.saveLemmasByPageAndSite(site, page, flag));
         log.info("Ссылки сохранены с сайта "+ site.getUrl() + " время " + LocalTime.now());
     }
     private Page setPageData(Site site, String url, int statusCode, boolean flag) {
-//        myHTTPConnection = new MyHTTPConnection();
         Page newPage = Page.builder().site(site).code(statusCode).path(url).build();
         if (!checkingStatusOfThePageCode(statusCode) && !flag) {
             setStatusCodeAndContent(newPage);
@@ -79,7 +72,6 @@ public class PageServiceImpl implements PageService{
     }
     @Override
     public Page getPageByUrl(Site site, String url) {
-        //TODO: пока что url, далее необходимо заменить на path без домена
         List<Page> pageList = pageRepository.findPageByPath(url);
         if(!pageList.isEmpty()) {
             lemmaRepository.updateLemmaByPageIdNative(pageList.get(0).getId());
@@ -91,7 +83,6 @@ public class PageServiceImpl implements PageService{
         return page;
     }
     private void setStatusCodeAndContent(Page page) {
-//        myHTTPConnection = new MyHTTPConnection();
         String url = page.getPath();
         try {
             Connection connection = myHTTPConnection.getConnection(url);
@@ -106,5 +97,59 @@ public class PageServiceImpl implements PageService{
     public static boolean checkingStatusOfThePageCode(int statusCode){
         String check = String.valueOf(statusCode);
         return (check.indexOf("5") == 0 || check.indexOf("4") == 0);
+    }
+    @Override
+    public List<Page> getPagesByLemmas(List<Lemma> lemmas){
+        List<Page> pages = new ArrayList<>();
+        for(int i = 0; i < lemmas.size() - 1; i++) {
+            Lemma lemma = lemmas.get(i);
+            List<Page> pagesByLemma = pageRepository.findByLemmaId(lemma.getId());
+            if (pages.isEmpty() && !pagesByLemma.isEmpty())pages.addAll(pagesByLemma);
+            pages = filterPages(pages, pagesByLemma);
+        }
+        return pages;
+    }
+    @Override
+    public List<Page> filterPages(List<Page> mainListPage, List<Page> receivedListPage){
+        List<Page> pages = new ArrayList<>();
+        mainListPage.forEach(page -> {
+            if (receivedListPage.contains(page)) pages.add(page);
+        });
+        return pages;
+    }
+    private Map<Page, Map<Lemma, Float>> getRankLemmas(Page page, List<Lemma> queryLemmas) {
+        Map<Page, Map<Lemma, Float>> rankLemmasOnPage = new HashMap<>();
+        queryLemmas.forEach(lemma -> {
+            List<Index> indexList = indexService.findIndexByPageAndLemma(page, lemma);
+            if (!indexList.isEmpty()) {
+                Map<Lemma, Float> rankLemmaOnPage = new LinkedHashMap<>();
+                rankLemmaOnPage.put(lemma, indexList.get(0).getRank());
+                rankLemmasOnPage.put(page, rankLemmaOnPage);
+            }
+        });
+        return rankLemmasOnPage;
+    }
+    private Set<Float> getRanksSet(Map<Page, Map<Lemma, Float>> rankLemmasOnPage){
+        Set<Float> ranks = new TreeSet<>();
+        rankLemmasOnPage.values().forEach(map ->
+                ranks.addAll(map.values()));
+        return ranks;
+    }
+    private float getMaxAbsoluteRelevance(List<Page> pageList, List<Lemma> queryLemmas) {
+        Set<Float> ranks = new TreeSet<>();
+        pageList.forEach(page -> {
+            Map<Page, Map<Lemma, Float>> rankLemmas = getRankLemmas(page, queryLemmas);
+            ranks.addAll(getRanksSet(rankLemmas));
+        });
+        return ranks.stream().max(Float::compareTo).get();
+    }
+    @Override
+    public float getRelativeRelevance(Page page, List<Page> pageList, List<Lemma> queryLemmas) {
+        Map<Page, Map<Lemma, Float>> rankLemmas = getRankLemmas(page, queryLemmas);
+        Set<Float> ranks = new TreeSet<>(getRanksSet(rankLemmas));
+        float absoluteRelevance = 0;
+        for (Float rank : ranks) absoluteRelevance += rank;
+        float maxAbsolutOnPages = getMaxAbsoluteRelevance(pageList, queryLemmas);
+        return absoluteRelevance/maxAbsolutOnPages;
     }
 }

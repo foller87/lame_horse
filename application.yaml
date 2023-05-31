@@ -15,7 +15,7 @@ spring:
 #          order_updates: true
 #          order_inserts: true
 #          generate_statistics: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -39,6 +39,15 @@ indexing-settings:
       name: Дом Булгакова
 #    - url: https://dimonvideo.ru/
 #      name: DIMONVIDEO.ru
+#    - url: https://www.lutherancathedral.ru
+#      name: Кафедральный собор святых Петра и Павла
+#    - url: https://et-cetera.ru/mobile
+#      name: Театр «Et Cetera»
+
+
 connection-settings:
   user_agent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-us; rvl.8.1.6) Gecko/20070725 Firefox/2.0.0.6
   referrer: http://www.google.com
+#search-settings:
+#  percentage of lemma elimination: 0.7
+#  minimum number of lemmas: 5

@@ -1,15 +1,10 @@
 package searchengine.dto.searcherUrls;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,11 +20,13 @@ public class SearcherUrls extends RecursiveAction {
     private MyHTTPConnection myHTTPConnection;
     private boolean flag;
 
-    public SearcherUrls(Node node, Map<String, Integer> pathHtmlFiles, String domain, boolean flag) {
+    public SearcherUrls(Node node, Map<String, Integer> pathHtmlFiles, String domain, boolean flag,
+                        MyHTTPConnection myHTTPConnection) {
         this.node = node;
         this.pathHtmlFiles = pathHtmlFiles;
         this.domain = domain;
         this.flag = flag;
+        this.myHTTPConnection = myHTTPConnection;
     }
 
     @Override
@@ -55,7 +52,7 @@ public class SearcherUrls extends RecursiveAction {
             List<SearcherUrls> subTasks = new LinkedList<>();
             for (String urlString : urls) {
                 Node child = new Node(urlString);
-                SearcherUrls task = new SearcherUrls(child, pathHtmlFiles, domain, flag);
+                SearcherUrls task = new SearcherUrls(child, pathHtmlFiles, domain, flag, myHTTPConnection);
                 task.fork();
                 subTasks.add(task);
                 node.addUrl(child);

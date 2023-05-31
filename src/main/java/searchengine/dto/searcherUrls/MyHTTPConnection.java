@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "connection-settings")
+@NoArgsConstructor
 public class MyHTTPConnection {
     @Value("user_agent")
     private String userAgent;
