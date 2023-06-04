@@ -20,7 +20,7 @@ API со следующими основными функциями:
 получаемая по запросу <i>/statistics</i>).
 
 ### Вкладка MANAGEMENT
-<img src="./readmeFiles/managment.png" width="80%"/><p>
+<img src="readmeFiles/managment.png" width="80%"/><p>
 На этой вкладке находятся инструменты управления 
 поисковым движком — запуск (запрос <i>/startIndexing</i>) 
 и остановка (запрос <i>/stopIndexing</i>) полной индексации
