@@ -34,16 +34,18 @@ public class LemmaServiceImpl implements LemmaService {
         HashMap<String, Integer> lemmasMap = new HashMap<>();
         String text = Jsoup.parse(textHTML).text();
         String[] textArray = arrayRussianWords(text);
+        log.info("Найдено необработанных слов на странице " + textArray.length);
         LuceneMorphology luceneMorphology = getLuceneMorphology();
         for (String word : textArray) {
-            if (word.length() > 2 && !word.isBlank() && isCorrectWordForm(word, luceneMorphology)) {
-                String lemma = getLemmaFromTheWord(word);
-                if (lemma.isBlank()) continue;
-                if (lemmasMap.containsKey(lemma)) {
-                    int count = lemmasMap.get(lemma) + 1;
-                    lemmasMap.replace(lemma, count);
+            if (word.length() < 2) continue;
+            if (word.isBlank()) continue;
+            if (!isCorrectWordForm(word, luceneMorphology)) continue;
+            String lemma = getLemmaFromTheWord(word, luceneMorphology);
+            if (lemma.isBlank()) continue;
+            if (lemmasMap.containsKey(lemma)) {
+                int count = lemmasMap.get(lemma) + 1;
+                lemmasMap.replace(lemma, count);
                 } else lemmasMap.put(lemma, 1);
-            }
         }
         return lemmasMap;
     }
@@ -64,8 +66,7 @@ public class LemmaServiceImpl implements LemmaService {
         return luceneMorphology;
     }
 
-    private String getLemmaFromTheWord(String word) {
-        LuceneMorphology luceneMorphology = getLuceneMorphology();
+    private String getLemmaFromTheWord(String word, LuceneMorphology luceneMorphology) {
         String lemma = "";
         List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
         if (anyWordBaseBelongToParticle(wordBaseForms)) {
@@ -199,6 +200,8 @@ public class LemmaServiceImpl implements LemmaService {
         }
         lemmaRepository.saveAllAndFlush(lemmaList);
         indexService.saveAllInAndFlush(indexList);
+        log.info("Сохранено лемм " + lemmaList.size());
+        log.info("Сохранено индексов " + indexList.size());
     }
 
     @Override

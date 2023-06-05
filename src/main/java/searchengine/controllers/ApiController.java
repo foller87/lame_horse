@@ -34,10 +34,10 @@ public class ApiController {
         return indexingService.pageIndexing(url);
     }
     @GetMapping("/search")
-    public ResponseEntity search(@RequestParam(required = false) String query,
-                                 @RequestParam(required = false) String site,
-                                 @RequestParam(required = false) Integer offset,
-                                 @RequestParam(required = false) Integer limit) {
+    public ResponseEntity search(@RequestParam(name = "query", required = false) String query,
+                                 @RequestParam(name = "site", required = false) String site,
+                                 @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
+                                 @RequestParam(name = "limit",required = false, defaultValue = "20") int limit) {
         return searchService.search(query, site, offset, limit);
     }
 }

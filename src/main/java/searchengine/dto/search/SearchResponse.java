@@ -2,12 +2,12 @@ package searchengine.dto.search;
 
 import lombok.Builder;
 
-import java.util.Set;
+import java.util.List;
 
 @lombok.Data
 @Builder
 public class SearchResponse {
     private boolean result;
     private long count;
-    private Set<Data> data;
+    private List<Data> data;
 }

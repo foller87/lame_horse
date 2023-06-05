@@ -28,7 +28,7 @@ public class SearchServiceImpl implements SearchService{
     private Set<Data> data;
 
     @Override
-    public ResponseEntity search(String query, String siteUrl, long limit, long offset) {
+    public ResponseEntity search(String query, String siteUrl, int offset, int limit) {
         log.info("Поисковый запрос - " + query);
         Map<String, Object> response = new HashMap<>();
         if (query.trim().isBlank()) {
@@ -37,8 +37,7 @@ public class SearchServiceImpl implements SearchService{
             return ResponseEntity.ok(response);
         }
         List<Site> sites = getUrlListBySiteUrl(siteUrl);
-        List<Lemma> lemmasSortedAndFilter = new ArrayList<>();
-        lemmasSortedAndFilter = lemmaService.getLemmasByQuery(query);
+        List<Lemma> lemmasSortedAndFilter = lemmaService.getLemmasByQuery(query);
         log.info("Искомые леммы - " + lemmasSortedAndFilter.toString());
         if (lemmasSortedAndFilter.isEmpty()) {
             response.put("result", false);
@@ -51,7 +50,7 @@ public class SearchServiceImpl implements SearchService{
             response.put("error", "По данному запросу не нашлось ни одной страницы страниц");
             return ResponseEntity.ok(response);
         }
-        return ResponseEntity.ok(buildResponse(pages, lemmasSortedAndFilter));
+        return ResponseEntity.ok(buildResponse(pages, lemmasSortedAndFilter, limit, offset));
     }
     private List<Site> getUrlListBySiteUrl(String siteUrl) {
         List<Site> sites = new ArrayList<>();
@@ -63,13 +62,13 @@ public class SearchServiceImpl implements SearchService{
         }
         return sites;
     }
-    private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter) {
+    private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter, int limit, int offset) {
         data = new TreeSet<>(Comparator.comparingDouble(Data::getRelevance).reversed());
         pages.forEach(page -> {
             Data pageData = new Data();
             pageData.setSite(page.getSite().getUrl());
             pageData.setSiteName(page.getSite().getName());
-            pageData.setUri(page.getPath().substring(page.getPath().indexOf(pageData.getSite()) + pageData.getSite().length()));
+            pageData.setUri(page.getPath().substring(pageData.getSite().length() + 3));
             Document doc = Jsoup.parse(page.getContent());
             for (String field : Arrays.asList("title", "body")) {
                 Element element = doc.getElementsByTag(field).first();
@@ -80,9 +79,12 @@ public class SearchServiceImpl implements SearchService{
             pageData.setRelevance(pageService.getRelativeRelevance(page, pages, lemmasSortedAndFilter));
             data.add(pageData);
         });
+        List<Data> dataList = new LinkedList<>();
+        data.forEach(d->dataList.add(d));
+        if (dataList.size() > limit) dataList.subList(offset, limit);
     return SearchResponse.builder()
                         .result(true)
                         .count(pages.size())
-                        .data(data).build();
+                        .data(dataList).build();
     }
 }
