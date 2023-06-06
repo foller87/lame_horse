@@ -63,22 +63,28 @@ public class SearchServiceImpl implements SearchService{
         return sites;
     }
     private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter, int limit, int offset) {
-        data = new TreeSet<>(Comparator.comparingDouble(Data::getRelevance).reversed());
-        pages.forEach(page -> {
-            Data pageData = new Data();
-            pageData.setSite(page.getSite().getUrl());
-            pageData.setSiteName(page.getSite().getName());
-            pageData.setUri(page.getPath().substring(pageData.getSite().length() + 3));
-            Document doc = Jsoup.parse(page.getContent());
-            for (String field : Arrays.asList("title", "body")) {
-                Element element = doc.getElementsByTag(field).first();
-                if (field.equals("title") && element != null) pageData.setTitle(element.text());
-                if (field.equals("body"))
-                    pageData.setSnippet(lemmaService.getFragmentText(element.text(),lemmasSortedAndFilter));
-            }
-            pageData.setRelevance(pageService.getRelativeRelevance(page, pages, lemmasSortedAndFilter));
-            data.add(pageData);
-        });
+        data = new TreeSet<>((o1, o2) -> {
+            int result = Float.compare(o1.getRelevance(), o2.getRelevance());
+            if (result == 0) result = (o1.getSite() + o1.getUri())
+                    .compareTo(o2.getSite() + o2.getUri());
+            return result;
+            });
+
+            pages.forEach(page -> {
+                Data pageData = new Data();
+                pageData.setSite(page.getSite().getUrl());
+                pageData.setSiteName(page.getSite().getName());
+                pageData.setUri(page.getPath().substring(pageData.getSite().length() + 3));
+                Document doc = Jsoup.parse(page.getContent());
+                for (String field : Arrays.asList("title", "body")) {
+                    Element element = doc.getElementsByTag(field).first();
+                    if (field.equals("title") && element != null) pageData.setTitle(element.text());
+                    if (field.equals("body"))
+                        pageData.setSnippet(lemmaService.getFragmentText(element.text(), lemmasSortedAndFilter));
+                }
+                pageData.setRelevance(pageService.getRelativeRelevance(page, pages, lemmasSortedAndFilter));
+                data.add(pageData);
+            });
         List<Data> dataList = new LinkedList<>();
         data.forEach(d->dataList.add(d));
         if (dataList.size() > limit) dataList.subList(offset, limit);
