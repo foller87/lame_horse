@@ -27,16 +27,16 @@ spring:
 #    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
 indexing-settings:
   sites:
-#    - url: https://www.lenta.ru
-#      name: Лента.ру
+    - url: https://www.lenta.ru
+      name: Лента.ру
 #    - url: https://www.skillbox.ru
 #      name: Skillbox
 #    - url: https://www.playback.ru
 #      name: PlayBack.Ru
     - url: https://www.svetlovka.ru
       name: Svetlovka.ru
-    - url: https://www.dombulgakova.ru
-      name: Дом Булгакова
+#    - url: https://www.dombulgakova.ru
+#      name: Дом Булгакова
 #    - url: https://dimonvideo.ru/
 #      name: DIMONVIDEO.ru
     - url: https://www.lutherancathedral.ru
@@ -46,7 +46,7 @@ indexing-settings:
 
 
 connection-settings:
-  user_agent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-us; rvl.8.1.6) Gecko/20070725 Firefox/2.0.0.6
+  user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2866.71 Safari/537.36
   referrer: http://www.google.com
 #search-settings:
 #  percentage of lemma elimination: 0.7

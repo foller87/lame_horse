@@ -3,10 +3,9 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import searchengine.config.SiteModel;
+import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.searcherUrls.MyHTTPConnection;
-import searchengine.model.Site;
 import searchengine.model.SiteStatus;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
@@ -30,13 +29,13 @@ public class SiteServiceImpl implements SiteService
     private final MyHTTPConnection myHTTPConnection;
 
     @Override
-    public Set<Site> addNewSites() {
-        Set<Site> sites = new HashSet<>();
-        for (SiteModel siteModel : sitesList.getSites()) {
-            Site newSite = new Site();
-            String urlSiteToConfig = removePrefixAndAddSuffix(siteModel.getUrl());
+    public Set<searchengine.model.Site> addNewSites() {
+        Set<searchengine.model.Site> sites = new HashSet<>();
+        for (Site site : sitesList.getSites()) {
+            searchengine.model.Site newSite = new searchengine.model.Site();
+            String urlSiteToConfig = removePrefixAndAddSuffix(site.getUrl());
             newSite.setUrl(urlSiteToConfig);
-            newSite.setName(siteModel.getName());
+            newSite.setName(site.getName());
             newSite.setSiteStatus(getStatusSite(newSite));
             if (newSite.getSiteStatus().equals(SiteStatus.FAILED))
                 newSite.setLastError("Ошибка индексации: Главная страница сайта не доступна");
@@ -46,7 +45,7 @@ public class SiteServiceImpl implements SiteService
         }
         return sites;
     }
-    private SiteStatus getStatusSite(Site site){
+    private SiteStatus getStatusSite(searchengine.model.Site site){
         int statusCode = checkingConnection(site);
         return PageServiceImpl.checkingStatusOfThePageCode(statusCode) ? SiteStatus.FAILED : SiteStatus.INDEXING;
     }
@@ -60,8 +59,8 @@ public class SiteServiceImpl implements SiteService
     @Override
     public boolean checkIndexingSite(){
         boolean check = false;
-        Iterable<Site> sites = siteRepository.findAll();
-        for (Site site : sites) {
+        Iterable<searchengine.model.Site> sites = siteRepository.findAll();
+        for (searchengine.model.Site site : sites) {
             if (site.getSiteStatus().equals(SiteStatus.INDEXING)) {
                 check = true;
                 break;
@@ -70,10 +69,10 @@ public class SiteServiceImpl implements SiteService
         return check;
     }
     @Override
-    public List<Site> findSiteByUrl(String url){
+    public List<searchengine.model.Site> findSiteByUrl(String url){
         return siteRepository.findByUrl(url);
     }
-    private int checkingConnection(Site site) {
+    private int checkingConnection(searchengine.model.Site site) {
         String url = site.getUrl();
         int statusCode = 0;
         try {
@@ -85,11 +84,11 @@ public class SiteServiceImpl implements SiteService
         return statusCode;
     }
     public void changeSiteStatus() {
-        List<Site> sites = siteRepository.findAll();
+        List<searchengine.model.Site> sites = siteRepository.findAll();
         sites.forEach(site -> {
             if (site.getSiteStatus().equals(SiteStatus.INDEXING)) site.setSiteStatus(SiteStatus.FAILED);
         });
-        sites.forEach(site -> siteRepository.save(site));
+        sites.forEach(siteRepository::save);
     }
     @Override
     public void deleteAllSites() {

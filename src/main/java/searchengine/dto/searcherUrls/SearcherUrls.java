@@ -39,7 +39,7 @@ public class SearcherUrls extends RecursiveAction {
             try {
                 doc = connection.get();
             } catch (IOException e) {
-                System.out.println("SearcherUrls на ссылке " + url);
+                System.out.println("SearcherUrls на ссылке " + url + " " + e.getMessage());
                 pathHtmlFiles.put(url, 404);
                 return;
             }

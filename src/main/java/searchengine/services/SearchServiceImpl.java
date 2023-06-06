@@ -11,11 +11,11 @@ import searchengine.dto.search.Data;
 import searchengine.dto.search.SearchResponse;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
-import searchengine.model.Site;
 import searchengine.model.SiteStatus;
 import searchengine.repository.SiteRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +36,6 @@ public class SearchServiceImpl implements SearchService{
             response.put("error", "Задан пустой поисковый запрос");
             return ResponseEntity.ok(response);
         }
-        List<Site> sites = getUrlListBySiteUrl(siteUrl);
         List<Lemma> lemmasSortedAndFilter = lemmaService.getLemmasByQuery(query);
         log.info("Искомые леммы - " + lemmasSortedAndFilter.toString());
         if (lemmasSortedAndFilter.isEmpty()) {
@@ -45,22 +44,24 @@ public class SearchServiceImpl implements SearchService{
             return ResponseEntity.ok(response);
         }
         List<Page> pages = pageService.getPagesByLemmas(lemmasSortedAndFilter);
-        if (pages.isEmpty()) {
+        List<Long> sitesId = getUrlListBySiteUrl(siteUrl);
+        List<Page> filteredPages = pages.stream().filter(page -> sitesId.contains(page.getId())).collect(Collectors.toList());
+        if (filteredPages.isEmpty()) {
             response.put("result", false);
             response.put("error", "По данному запросу не нашлось ни одной страницы страниц");
             return ResponseEntity.ok(response);
         }
-        return ResponseEntity.ok(buildResponse(pages, lemmasSortedAndFilter, limit, offset));
+        return ResponseEntity.ok(buildResponse(filteredPages, lemmasSortedAndFilter, limit, offset));
     }
-    private List<Site> getUrlListBySiteUrl(String siteUrl) {
-        List<Site> sites = new ArrayList<>();
+    private List<Long> getUrlListBySiteUrl(String siteUrl) {
+        List<Long> sitesId = new ArrayList<>();
         if (siteUrl == null) {
             siteRepository.findBySiteStatus(SiteStatus.INDEXED)
-                    .forEach(site -> sites.add(site));
+                    .forEach(site -> sitesId.add(site.getId()));
         } else {
-            sites.add(siteRepository.findByUrl(siteUrl).get(0));
+            sitesId.add(siteRepository.findByUrl(siteUrl).get(0).getId());
         }
-        return sites;
+        return sitesId;
     }
     private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter, int limit, int offset) {
         data = new TreeSet<>((o1, o2) -> {
@@ -80,13 +81,14 @@ public class SearchServiceImpl implements SearchService{
                     Element element = doc.getElementsByTag(field).first();
                     if (field.equals("title") && element != null) pageData.setTitle(element.text());
                     if (field.equals("body"))
-                        pageData.setSnippet(lemmaService.getFragmentText(element.text(), lemmasSortedAndFilter));
+                        if (element != null) {
+                            pageData.setSnippet(lemmaService.getFragmentText(element.text(), lemmasSortedAndFilter));
+                        }
                 }
                 pageData.setRelevance(pageService.getRelativeRelevance(page, pages, lemmasSortedAndFilter));
                 data.add(pageData);
             });
-        List<Data> dataList = new LinkedList<>();
-        data.forEach(d->dataList.add(d));
+        List<Data> dataList = new LinkedList<>(data);
         if (dataList.size() > limit) dataList.subList(offset, limit);
     return SearchResponse.builder()
                         .result(true)
