@@ -1,5 +1,6 @@
 package searchengine.dto.searcherUrls;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,6 +13,7 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 @Data
+@Slf4j
 public class SearcherUrls extends RecursiveAction {
     private Map<String, Integer> pathHtmlFiles;
     private Node node;
@@ -34,12 +36,16 @@ public class SearcherUrls extends RecursiveAction {
         String url = node.getUrl();
         Connection connection = myHTTPConnection.getConnection(url);
         Document doc;
+        if (pathHtmlFiles.containsKey(url)) return;
         int statusCode = getStatusCode(url, connection);
-        if (!checkStatusPageByFirstChar(statusCode) && !flag) {
+        boolean checkStatusPageByFirstCharBoolean = checkStatusPageByFirstChar(statusCode);
+        if (!checkStatusPageByFirstCharBoolean && !flag) {
             try {
+                Thread.sleep(1000);
                 doc = connection.get();
-            } catch (IOException e) {
-                System.out.println("SearcherUrls на ссылке " + url + " " + e.getMessage());
+                Thread.sleep(2000);
+            } catch (IOException | InterruptedException e) {
+                log.info("Присвоен статус 404. Ошибка на странице " + url + " " + e.getMessage());
                 pathHtmlFiles.put(url, 404);
                 return;
             }
@@ -64,7 +70,10 @@ public class SearcherUrls extends RecursiveAction {
         for (Element element : elements){
             String childUrl = element.attr("abs:href");
             boolean check = checkPageOrUrl(childUrl);
-            if (childUrl.contains(domain) && !pathHtmlFiles.containsKey(childUrl) && check){
+            int beginIndex = childUrl.indexOf(domain) + domain.length(); //для www.
+            String urlDomain = childUrl.substring(0, beginIndex);
+            if (childUrl.contains(domain) && !pathHtmlFiles.containsKey(childUrl) && check &&
+                    urlDomain.length() <= domain.length() + 11){
                 urls.add(childUrl);
             }
         }
@@ -75,10 +84,11 @@ public class SearcherUrls extends RecursiveAction {
             Connection.Response response = connection.execute();
             statusCode = response.statusCode();
         } catch (IOException e) {
-        System.out.println("SearcherUrls на ссылке " + url);
-        statusCode = 404;
+            statusCode = 404;
+
         }
         pathHtmlFiles.put(url, statusCode);
+        log.info("Добавляем "+ url + "Уже " + pathHtmlFiles.size() + " в коллекции");
         return statusCode;
     }
     private boolean checkPageOrUrl(String url) {

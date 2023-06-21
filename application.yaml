@@ -27,26 +27,26 @@ spring:
 #    org.hibernate.type.descriptor.sql.BasicBinder: DEBUG
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-#    - url: https://www.skillbox.ru
-#      name: Skillbox
+#    - url: https://www.lenta.ru
+#      name: Лента.ру
+    - url: https://www.skillbox.ru
+      name: Skillbox
 #    - url: https://www.playback.ru
 #      name: PlayBack.Ru
-    - url: https://www.svetlovka.ru
-      name: Svetlovka.ru
+#    - url: https://www.svetlovka.ru
+#      name: Svetlovka.ru
 #    - url: https://www.dombulgakova.ru
 #      name: Дом Булгакова
 #    - url: https://dimonvideo.ru/
 #      name: DIMONVIDEO.ru
-    - url: https://www.lutherancathedral.ru
-      name: Кафедральный собор святых Петра и Павла
+#    - url: https://www.lutherancathedral.ru
+#      name: Кафедральный собор святых Петра и Павла
 #    - url: https://et-cetera.ru/mobile
 #      name: Театр «Et Cetera»
 
 
 connection-settings:
-  user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2866.71 Safari/537.36
+  user_agent: Mozilla/4.0 (compatible; MSIE 7.0; AOL 9.5; AOLBuild 4337.89; Windows NT 6.0; SLCC1; .NET CLR 2.0.50727; .NET CLR 3.0.04506)
   referrer: http://www.google.com
 #search-settings:
 #  percentage of lemma elimination: 0.7

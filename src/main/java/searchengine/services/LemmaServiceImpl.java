@@ -98,7 +98,8 @@ public class LemmaServiceImpl implements LemmaService {
                 int beginIndex;
                 if (nameOfTheLemmasFromTheQuery.contains(lemma)) {
                     if (builder.length() == 0) {
-                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word) - word.length();
+                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word);
+//                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word) - word.length();
                         builder.append(ownText.getFragment(contentText, beginIndex));
                         return highlightingText(builder.toString(), queryLemmas);
                     }

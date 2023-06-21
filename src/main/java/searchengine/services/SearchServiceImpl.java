@@ -45,7 +45,8 @@ public class SearchServiceImpl implements SearchService{
         }
         List<Page> pages = pageService.getPagesByLemmas(lemmasSortedAndFilter);
         List<Long> sitesId = getUrlListBySiteUrl(siteUrl);
-        List<Page> filteredPages = pages.stream().filter(page -> sitesId.contains(page.getId())).collect(Collectors.toList());
+        List<Page> filteredPages = pages.stream().filter(page -> sitesId.contains
+                (page.getSite().getId())).collect(Collectors.toList());
         if (filteredPages.isEmpty()) {
             response.put("result", false);
             response.put("error", "По данному запросу не нашлось ни одной страницы страниц");

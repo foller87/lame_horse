@@ -18,6 +18,8 @@ public class MyHTTPConnection {
     public Connection getConnection(String url) {
         return Jsoup.connect(url).ignoreHttpErrors(true)
                 .userAgent(userAgent)
-                .referrer(referrer).followRedirects(false);
+                .referrer(referrer)
+                .followRedirects(false)
+                .timeout(10000);
     }
 }

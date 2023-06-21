@@ -1,29 +1,38 @@
 package searchengine.dto.search;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
 public class OwnText {
+    private static final int HALFTEXTFRAGMENT = 250;
   public String getFragment(String textHtml, int indexTheBeginningOfTheFragment) {
       int theIndexOfTheFragmentAtTheEndOfTheText = textHtml.length() - indexTheBeginningOfTheFragment;
       StringBuilder fragment = new StringBuilder();
-      int startIndex = textHtml.substring(0, indexTheBeginningOfTheFragment).lastIndexOf(".") + 1;
-      StringBuilder newText = new StringBuilder();
-      if (indexTheBeginningOfTheFragment > 50 && theIndexOfTheFragmentAtTheEndOfTheText > 50) {
-          newText.append(textHtml, startIndex, startIndex + 300);
+      log.info(textHtml);
+      log.info("Длина текста " + textHtml.length());
+      log.info("Индекс конца текста " + theIndexOfTheFragmentAtTheEndOfTheText);
+
+      int startIndex;
+      if (indexTheBeginningOfTheFragment < HALFTEXTFRAGMENT) startIndex = 0;
+      else startIndex = textHtml.indexOf(" ", indexTheBeginningOfTheFragment - HALFTEXTFRAGMENT);
+      int endIndex;
+      if (textHtml.length() - 1 < indexTheBeginningOfTheFragment + HALFTEXTFRAGMENT) endIndex = textHtml.length() - 1;
+      else endIndex = textHtml.substring(startIndex, indexTheBeginningOfTheFragment + HALFTEXTFRAGMENT).lastIndexOf(" ");
+//      int startIndex = textHtml.substring(0, indexTheBeginningOfTheFragment).indexOf(".") + 1;
+      if (startIndex > 0 && endIndex < textHtml.length() - 1) {
           fragment.append("...")
-                  .append(newText.substring(0, newText.lastIndexOf(" ") - 1))
+                  .append(textHtml, startIndex, endIndex)
                   .append("...");
           return fragment.toString();
       }
-      if (theIndexOfTheFragmentAtTheEndOfTheText < 300) {
-          startIndex = textHtml.substring(0, startIndex - 300).lastIndexOf(" ");
+      if (endIndex == textHtml.length() - 1) {
           fragment.append("...")
-                  .append(textHtml, startIndex, textHtml.length() - 1);
+                  .append(textHtml, startIndex, endIndex);
           return fragment.toString();
       }
-      if (indexTheBeginningOfTheFragment < 50) {
-          theIndexOfTheFragmentAtTheEndOfTheText = textHtml.substring(0,startIndex + 300).lastIndexOf(" ");
-          fragment.append(textHtml, 0, theIndexOfTheFragmentAtTheEndOfTheText)
+      if (startIndex == 0) {
+          fragment.append(textHtml, startIndex, endIndex)
                   .append("...");
       }
       return fragment.toString();
