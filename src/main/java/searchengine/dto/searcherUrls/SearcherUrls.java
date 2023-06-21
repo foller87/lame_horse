@@ -36,10 +36,7 @@ public class SearcherUrls extends RecursiveAction {
         String url = node.getUrl();
         Connection connection = myHTTPConnection.getConnection(url);
         Document doc;
-        if (pathHtmlFiles.containsKey(url)) return;
-        int statusCode = getStatusCode(url, connection);
-        boolean checkStatusPageByFirstCharBoolean = checkStatusPageByFirstChar(statusCode);
-        if (!checkStatusPageByFirstCharBoolean && !flag) {
+        if (!flag) {
             try {
                 Thread.sleep(1000);
                 doc = connection.get();
@@ -51,7 +48,7 @@ public class SearcherUrls extends RecursiveAction {
             }
             Elements elements = doc.select("a[href]");
             Set<String> urls = new HashSet<>();
-            addUrl(elements, urls);
+            addUrl(elements, urls, connection);
             if (urls.isEmpty()) {
                 return;
             }
@@ -66,29 +63,29 @@ public class SearcherUrls extends RecursiveAction {
             subTasks.forEach(ForkJoinTask::join);
         }
     }
-    private void addUrl(Elements elements, Set<String> urls){
+    private void addUrl(Elements elements, Set<String> urls, Connection connection){
         for (Element element : elements){
             String childUrl = element.attr("abs:href");
             boolean check = checkPageOrUrl(childUrl);
             int beginIndex = childUrl.indexOf(domain) + domain.length(); //для www.
             String urlDomain = childUrl.substring(0, beginIndex);
-            if (childUrl.contains(domain) && !pathHtmlFiles.containsKey(childUrl) && check &&
-                    urlDomain.length() <= domain.length() + 11){
-                urls.add(childUrl);
+                if (childUrl.contains(domain) && !pathHtmlFiles.containsKey(childUrl) && check &&
+                        urlDomain.length() <= domain.length() + 12) {
+                    urls.add(childUrl);
+                    int statusCode = getStatusCode(connection);
+                    pathHtmlFiles.put(childUrl, statusCode);
+                    log.info("Добавляем "+ childUrl + " Уже " + pathHtmlFiles.size() + " в коллекции");
+                }
             }
         }
-    }
-    private int getStatusCode(String url, Connection connection) {
+    private int getStatusCode(Connection connection) {
         int statusCode;
         try {
             Connection.Response response = connection.execute();
             statusCode = response.statusCode();
         } catch (IOException e) {
             statusCode = 404;
-
         }
-        pathHtmlFiles.put(url, statusCode);
-        log.info("Добавляем "+ url + "Уже " + pathHtmlFiles.size() + " в коллекции");
         return statusCode;
     }
     private boolean checkPageOrUrl(String url) {
@@ -96,10 +93,6 @@ public class SearcherUrls extends RecursiveAction {
         int endIndex = url.lastIndexOf(".html");
         boolean page = endIndex == url.length() - 5;
         return (urlBoolean || page);
-    }
-    private boolean checkStatusPageByFirstChar(int statusCode){
-        String status = String.valueOf(statusCode);
-        return (status.indexOf("5") == 0 || status.indexOf("4") == 0);
     }
 }
 

@@ -78,7 +78,7 @@ public class SiteServiceImpl implements SiteService
         try {
             statusCode = myHTTPConnection.getConnection(url).execute().statusCode();
         } catch (IOException e) {
-            log.error("Сайт не доступен " + url + " " + statusCode);
+            log.error("Сайт не доступен " + url + " " + statusCode + " " + e.getMessage());
             statusCode = 404;
         }
         return statusCode;

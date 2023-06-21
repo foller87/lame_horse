@@ -39,7 +39,7 @@ public class PageServiceImpl implements PageService{
         String nameSite = getNameSite(url);
 
         SearcherUrls searcher = new SearcherUrls(node, pathHtmlFiles, nameSite, flag, myHTTPConnection);
-        ForkJoinPool fjp = new ForkJoinPool(6);
+        ForkJoinPool fjp = new ForkJoinPool(12);
         fjp.invoke(searcher);
 
         List<Page> pages = getListPages(site, pathHtmlFiles, flag);
