@@ -16,10 +16,14 @@ public class OwnText {
       int startIndex;
       if (indexTheBeginningOfTheFragment < HALFTEXTFRAGMENT) startIndex = 0;
       else startIndex = textHtml.indexOf(" ", indexTheBeginningOfTheFragment - HALFTEXTFRAGMENT);
-      int endIndex;
-      if (textHtml.length() - 1 < indexTheBeginningOfTheFragment + HALFTEXTFRAGMENT) endIndex = textHtml.length() - 1;
-      else endIndex = textHtml.substring(startIndex, indexTheBeginningOfTheFragment + HALFTEXTFRAGMENT).lastIndexOf(" ");
-//      int startIndex = textHtml.substring(0, indexTheBeginningOfTheFragment).indexOf(".") + 1;
+      int endIndex = indexTheBeginningOfTheFragment + HALFTEXTFRAGMENT;
+      if (textHtml.length() - 1 < endIndex)
+          endIndex = textHtml.length() - 1;
+      else {
+          String preliminaryFragment = textHtml.substring(startIndex, endIndex);
+          endIndex = textHtml.indexOf(" ", textHtml.indexOf(preliminaryFragment)
+                  + preliminaryFragment.length());
+      }
       if (startIndex > 0 && endIndex < textHtml.length() - 1) {
           fragment.append("...")
                   .append(textHtml, startIndex, endIndex)
