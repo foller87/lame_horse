@@ -40,7 +40,7 @@ public class SearcherUrls extends RecursiveAction {
             try {
                 Thread.sleep(1000);
                 doc = connection.get();
-                Thread.sleep(2000);
+                Thread.sleep(6000);
             } catch (IOException | InterruptedException e) {
                 log.info("Присвоен статус 404. Ошибка на странице " + url + " " + e.getMessage());
                 pathHtmlFiles.put(url, 404);

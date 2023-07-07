@@ -11,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(name = "lemma_unique", columnNames = "lemma")})
+@Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(name = "lemma_by_site_id_unique",
+        columnNames = {"lemma", "site_id"})})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

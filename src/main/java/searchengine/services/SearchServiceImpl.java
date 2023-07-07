@@ -52,7 +52,7 @@ public class SearchServiceImpl implements SearchService{
             response.put("error", "По данному запросу не нашлось ни одной страницы страниц");
             return ResponseEntity.ok(response);
         }
-        return ResponseEntity.ok(buildResponse(filteredPages, lemmasSortedAndFilter, limit, offset));
+        return ResponseEntity.ok(buildResponse(filteredPages, lemmasSortedAndFilter, query, offset, limit));
     }
     private List<Long> getUrlListBySiteUrl(String siteUrl) {
         List<Long> sitesId = new ArrayList<>();
@@ -64,7 +64,7 @@ public class SearchServiceImpl implements SearchService{
         }
         return sitesId;
     }
-    private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter, int limit, int offset) {
+    private SearchResponse buildResponse(List<Page> pages, List<Lemma> lemmasSortedAndFilter, String query, int offset, int limit) {
         data = new TreeSet<>((o1, o2) -> {
             int result = Float.compare(o1.getRelevance(), o2.getRelevance());
             if (result == 0) result = (o1.getSite() + o1.getUri())
@@ -76,14 +76,15 @@ public class SearchServiceImpl implements SearchService{
                 Data pageData = new Data();
                 pageData.setSite(page.getSite().getUrl());
                 pageData.setSiteName(page.getSite().getName());
-                pageData.setUri(page.getPath().substring(pageData.getSite().length() + 3));
+                pageData.setUri(getUri(page));
                 Document doc = Jsoup.parse(page.getContent());
                 for (String field : Arrays.asList("title", "body")) {
                     Element element = doc.getElementsByTag(field).first();
                     if (field.equals("title") && element != null) pageData.setTitle(element.text());
+                    else pageData.setTitle("...");
                     if (field.equals("body"))
                         if (element != null) {
-                            pageData.setSnippet(lemmaService.getFragmentText(element.text(), lemmasSortedAndFilter));
+                            pageData.setSnippet(lemmaService.getFragmentText(element.text(), query));
                         }
                 }
                 pageData.setRelevance(pageService.getRelativeRelevance(page, pages, lemmasSortedAndFilter));
@@ -91,9 +92,17 @@ public class SearchServiceImpl implements SearchService{
             });
         List<Data> dataList = new LinkedList<>(data);
         if (dataList.size() > limit) dataList.subList(offset, limit);
+        Collections.reverse(dataList);
+        log.info("Найдены страницы: ");
+        pages.forEach(page -> log.info("Ид страницы - " + page.getId()));
     return SearchResponse.builder()
                         .result(true)
                         .count(pages.size())
                         .data(dataList).build();
+    }
+    private String getUri(Page page) {
+        if (page.getPath().indexOf("www") == -1)
+            return page.getPath().substring(page.getSite().getUrl().length());
+        return page.getPath().substring(page.getSite().getUrl().length() + 3);
     }
 }

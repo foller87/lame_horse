@@ -79,34 +79,40 @@ public class LemmaServiceImpl implements LemmaService {
     }
 
     @Override
-    public String getFragmentText(String contentText, List<Lemma> queryLemmas) {
-        String[] textContentArray = getArrayWords(contentText);
-        LuceneMorphology luceneMorphology = getLuceneMorphology();
-        List<String> nameOfTheLemmasFromTheQuery = new ArrayList<>();
-        queryLemmas.forEach(lemma -> nameOfTheLemmasFromTheQuery.add(lemma.getLemma()));
-        StringBuilder builder = new StringBuilder();
+    public String getFragmentText(String contentText, String query) {
+        String parseContentText = Jsoup.parse(contentText).text();
+        int beginIndex = parseContentText.indexOf(query);
+        int endIndex = beginIndex + query.length();
         OwnText ownText = new OwnText();
-        for (String word : textContentArray) {
-            if (!word.isBlank() && isCorrectWordForm(word, luceneMorphology)) {
-                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
-                if (anyWordBaseBelongToParticle(wordBaseForms)) continue;
+        String fragment = "<b>".concat(parseContentText.substring(beginIndex, endIndex)).concat("</b>");
+        return ownText.getFragment(contentText, fragment, beginIndex);
 
-                List<String> normalForms = luceneMorphology.getNormalForms(word);
-                if (normalForms.isEmpty()) continue;
-
-                String lemma = normalForms.get(0);
-                int beginIndex;
-                if (nameOfTheLemmasFromTheQuery.contains(lemma)) {
-                    if (builder.length() == 0) {
-                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word);
-//                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word) - word.length();
-                        builder.append(ownText.getFragment(contentText, beginIndex));
-                        return highlightingText(builder.toString(), queryLemmas);
-                    }
-                }
-            }
-        }
-        return builder.toString();
+//        String[] textContentArray = getArrayWords(contentText);
+//        LuceneMorphology luceneMorphology = getLuceneMorphology();
+//        List<String> nameOfTheLemmasFromTheQuery = new ArrayList<>();
+//        queryLemmas.forEach(lemma -> nameOfTheLemmasFromTheQuery.add(lemma.getLemma()));
+//        StringBuilder builder = new StringBuilder();
+//        OwnText ownText = new OwnText();
+//        for (String word : textContentArray) {
+//            if (!word.isBlank() && isCorrectWordForm(word, luceneMorphology)) {
+//                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
+//                if (anyWordBaseBelongToParticle(wordBaseForms)) continue;
+//
+//                List<String> normalForms = luceneMorphology.getNormalForms(word);
+//                if (normalForms.isEmpty()) continue;
+//
+//                String lemma = normalForms.get(0);
+//                int beginIndex;
+//                if (nameOfTheLemmasFromTheQuery.contains(lemma)) {
+//                    if (builder.length() == 0) {
+//                        beginIndex = contentText.toLowerCase(Locale.ROOT).indexOf(word);
+//                        builder.append(ownText.getFragment(contentText, beginIndex));
+//                        return highlightingText(builder.toString(), queryLemmas);
+//                    }
+//                }
+//            }
+//        }
+//        return builder.toString();
     }
     private String highlightingText(String fragmentText, List<Lemma> queryLemmas) {
         String text = Jsoup.parse(fragmentText).text();

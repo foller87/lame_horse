@@ -11,5 +11,5 @@ public interface LemmaService {
     HashMap<String, Integer> getLemmasFromHTML(String textHTML);
     void saveLemmasByPageAndSite(Site site, Page page, boolean flag);
     List<Lemma> getLemmasByQuery(String query);
-    String getFragmentText(String contentText, List<Lemma> queryLemmas);
+    String getFragmentText(String contentText, String query);
 }
